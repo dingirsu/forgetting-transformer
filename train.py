@@ -832,9 +832,13 @@ def train(config: Config):
                 train_state["window_loss_per_token"] += fabric.all_reduce(local_window_loss_per_token, reduce_op="sum").cpu().numpy()
                 local_window_loss_per_token.zero_()
 
+            # checkpointer.save_checkpoint(
+            #     train_state=train_state, step=train_state["token_count"],
+            #     keep=(train_state["token_count"] % config.checkpoint_keep_interval == 0 or train_state["token_count"] >= config.train.max_tokens)
+            # )
             checkpointer.save_checkpoint(
                 train_state=train_state, step=train_state["token_count"],
-                keep=(train_state["token_count"] % config.checkpoint_keep_interval == 0 or train_state["token_count"] >= config.train.max_tokens)
+                keep=True
             )
             # TODO: Disable some annoying message. If using torch>=2.4 you can delete this
             fsdp_logger = logging.getLogger("torch.distributed.fsdp._optim_utils")

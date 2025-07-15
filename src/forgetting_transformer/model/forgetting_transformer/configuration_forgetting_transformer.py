@@ -46,6 +46,9 @@ class ForgettingTransformerConfig(PretrainedConfig):
         qk_norm_share_param_across_head: bool = False,
         use_k_shift: bool = False,
         use_v_shift: bool = False,
+        use_positive_gate: bool = False,
+        positive_gate_act: str = "relu",
+        gate_group: int = 1,
         **kwargs,
     ):
         self.vocab_size = vocab_size
@@ -79,6 +82,10 @@ class ForgettingTransformerConfig(PretrainedConfig):
         self.qk_norm_share_param_across_head = qk_norm_share_param_across_head
         self.use_k_shift = use_k_shift
         self.use_v_shift = use_v_shift
+
+        self.use_positive_gate = use_positive_gate
+        self.positive_gate_act = positive_gate_act
+        self.gate_group = gate_group
 
         super().__init__(
             pad_token_id=pad_token_id,

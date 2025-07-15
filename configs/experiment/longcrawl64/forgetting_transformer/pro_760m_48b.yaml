@@ -20,7 +20,7 @@ log_interval: 33554432               # 32Mi. 32 times per billion
 train_eval_interval: 536870912       # 512Mi
 checkpoint_interval: 268435456       # 256Mi In tokens. 4 times per 1Bi. It is worth it
 
-skip_eval: true
+skip_eval: false
 eval_interval: 48318382080            # Only at the end. Not used due to skip_eval
 checkpoint_keep_interval: 48318382080 # Only at the end.
 

@@ -33,7 +33,7 @@ train:
   # Used for one gradient accumulation step, must be larger than batch_len
   grad_acc_tokens: 16384
   max_grad_norm: 1.0
-  gradient_checkpointing: false
+  gradient_checkpointing: true
 
 model:
   config:

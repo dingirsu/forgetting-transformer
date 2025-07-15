@@ -8,6 +8,7 @@ logs/
 pred/
 notebooks/
 figures/
+exp/
 .psync
 # hyena_S5 specific stuff
 wandb/

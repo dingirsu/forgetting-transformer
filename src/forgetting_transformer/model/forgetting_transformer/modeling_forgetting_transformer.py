@@ -29,10 +29,17 @@ from forgetting_transformer.ops.forgetting_attention import forgetting_attention
 from .fgate_cache import FgateDynamicCache
 from .glu_linear import glu_linear
 from .token_shift import token_shift
-
+from forgetting_transformer.utils import SPARSITY_FUNC
 from functools import partial
 
 logger = logging.get_logger(__name__)
+
+GATE_ACT = {
+    "relu": torch.nn.functional.relu,
+    "silu": torch.nn.functional.silu,
+    "sigmoid": torch.nn.functional.sigmoid,
+    "logsigmoid": torch.nn.functional.logsigmoid
+}
 
 
 class ShiftLinear(nn.Module):
@@ -156,7 +163,10 @@ class ForgettingAttentionLayer(nn.Module):
         use_k_shift: bool = False,
         use_v_shift: bool = False,
         initializer_range: float = 0.02,
-        layer_idx: int = None
+        layer_idx: int = None,
+        use_positive_gate: bool = False,
+        positive_gate_act: str = "relu",
+        gate_group: int = 1
     ):
         """
         Forgetting Attention layer.
@@ -229,6 +239,10 @@ class ForgettingAttentionLayer(nn.Module):
         self.use_k_shift = use_k_shift
         self.use_v_shift = use_v_shift
 
+        self.use_positive_gate = use_positive_gate
+        self.postive_gate_act_func = GATE_ACT[positive_gate_act]
+        self.negative_gate_act_func = GATE_ACT['logsigmoid']
+        self.gate_group = gate_group
 
         device = next(self.parameters()).device
         # Forget gate
@@ -237,7 +251,9 @@ class ForgettingAttentionLayer(nn.Module):
         self.fgate_bias_init = fgate_bias_init
         if fgate_type == "full":
             assert not fgate_bias_init
-            self.fgate_proj = nn.Linear(self.hidden_size, self.num_heads, bias=True)
+            self.fgate_proj = nn.Linear(self.hidden_size, self.num_heads // self.gate_group, bias=True)
+            if self.use_positive_gate:
+                self.positive_fgate_proj = nn.Linear(self.hidden_size, self.num_heads // gate_group, bias=True)
         elif fgate_type == "bias_only":
             self.fgate_bias = nn.Parameter(torch.zeros(size=(self.num_heads,), device=device))
             self.fgate_bias._no_weight_decay = True
@@ -367,7 +383,13 @@ class ForgettingAttentionLayer(nn.Module):
         if self.fgate_type == "full":
             fgate_logit = self.fgate_proj(hidden_states)
             fgate_logit = rearrange(fgate_logit, "b t h -> b h t")
-            log_fgate = torch.nn.functional.logsigmoid(fgate_logit.float())
+            log_fgate = self.negative_gate_act_func(fgate_logit.float())
+            if self.use_positive_gate:
+                far_fgate_logit = self.positive_fgate_proj(hidden_states)
+                far_fgate_logit = rearrange(far_fgate_logit, "b t h -> b h t")
+                log_fgate += self.postive_gate_act_func(far_fgate_logit.float())
+            if self.gate_group > 1:
+                log_fgate = log_fgate.repeat_interleave(self.gate_group, dim=1)
         elif self.fgate_type == "none":
             log_fgate = torch.zeros((batch_size, self.num_heads, q_len), dtype=torch.float32, device=hidden_states.device)
         else:
@@ -536,7 +558,10 @@ class ForgettingTransformerBlock(nn.Module):
             use_k_shift=config.use_k_shift,
             use_v_shift=config.use_v_shift,
             initializer_range=config.initializer_range,
-            layer_idx=layer_idx
+            layer_idx=layer_idx,
+            use_positive_gate=config.use_positive_gate,
+            positive_gate_act=config.positive_gate_act,
+            gate_group=config.gate_group
         )
         self.mlp_norm = RMSNorm(hidden_size=config.hidden_size, eps=config.norm_eps)
         self.mlp = ForgettingTransformerMLP(

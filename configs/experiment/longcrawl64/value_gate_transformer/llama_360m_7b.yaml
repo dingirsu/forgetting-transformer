@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /model: forgetting_transformer
+  - override /model: transformer
   - override /optimizer: adamw
   - override /schedule: warmup_cosine
   - override /datamodule: longcrawl64
@@ -33,22 +33,14 @@ train:
   # Used for one gradient accumulation step, must be larger than batch_len
   grad_acc_tokens: 16384
   max_grad_norm: 1.0
-  gradient_checkpointing: true
+  gradient_checkpointing: false
 
 model:
   config:
     hidden_size: 1024
     num_hidden_layers: 24
     num_heads: 16
-    use_rope: false
     rope_base: 500000
-    # Pro config
-    use_v_shift: true
-    use_k_shift: true
-    qk_norm: true
-    use_output_gate: true
-    use_output_norm: true
-    hidden_ratio: 3.5   # output gates use extra params so we reduce it here
 
 optimizer: 
   lr: 0.002

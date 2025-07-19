@@ -5,16 +5,16 @@ from typing import Optional
 from transformers.configuration_utils import PretrainedConfig
 
 
-class ForgettingTransformerConfig(PretrainedConfig):
+class TransformerConfig(PretrainedConfig):
 
-    model_type = 'forgetting_transformer-project_fox'
+    model_type = 'transformer-project_fox'
     keys_to_ignore_at_inference = ['past_key_values']
 
     def __init__(
         self,
         vocab_size: int = 32000,
         hidden_size: int = 2048,
-        hidden_ratio: Optional[float] = 4,
+        hidden_ratio: Optional[int] = 4,
         intermediate_size: Optional[int] = None,
         num_hidden_layers: int = 24,
         num_heads: int = 32,
@@ -34,21 +34,8 @@ class ForgettingTransformerConfig(PretrainedConfig):
         fuse_norm: bool = True,
         fuse_cross_entropy: bool = True,
         rope_base: float = 500000.0,
-        use_rope: bool = False,
-        use_output_gate: bool = False,
-        ogate_act: str = "sigmoid",
-        fgate_type: str = "full",
-        fgate_bias_init: bool = False,
-        decay_time_min: Optional[float] = None,
-        decay_time_max: Optional[float] = None,
-        use_output_norm: bool = False,
-        qk_norm: bool = False,
-        qk_norm_share_param_across_head: bool = False,
-        use_k_shift: bool = False,
-        use_v_shift: bool = False,
-        use_positive_gate: bool = False,
-        positive_gate_act: str = "relu",
-        gate_group: int = 1,
+        use_rope: bool = True,
+        use_value_gate: bool = False,
         **kwargs,
     ):
         self.vocab_size = vocab_size
@@ -71,21 +58,7 @@ class ForgettingTransformerConfig(PretrainedConfig):
         self.fuse_norm = fuse_norm
         self.rope_base = rope_base
         self.use_rope = use_rope
-        self.use_output_gate = use_output_gate
-        self.ogate_act = ogate_act
-        self.fgate_type = fgate_type
-        self.fgate_bias_init = fgate_bias_init
-        self.decay_time_min = decay_time_min
-        self.decay_time_max = decay_time_max
-        self.use_output_norm = use_output_norm
-        self.qk_norm = qk_norm
-        self.qk_norm_share_param_across_head = qk_norm_share_param_across_head
-        self.use_k_shift = use_k_shift
-        self.use_v_shift = use_v_shift
-
-        self.use_positive_gate = use_positive_gate
-        self.positive_gate_act = positive_gate_act
-        self.gate_group = gate_group
+        self.use_value_gate = use_value_gate
 
         super().__init__(
             pad_token_id=pad_token_id,

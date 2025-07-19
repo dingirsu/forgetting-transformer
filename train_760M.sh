@@ -3,7 +3,7 @@ OUTPUT_DIR="./exp/model/fox_pro_760m_48b"  # You can set this to any other path
 WANDB_DIR="./exp/wandb"  # You can set this to any other path
 mkdir -p $OUTPUT_DIR
 mkdir -p $WANDB_DIR
-CUDA_VISIBLE_DEVICES=0,1,4 \
+CUDA_VISIBLE_DEVICES=0,1 \
 fabric run train.py \
     --devices 2 \
     --num-nodes 1 \

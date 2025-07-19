@@ -9,6 +9,7 @@ pred/
 notebooks/
 figures/
 .psync
+exp/
 # hyena_S5 specific stuff
 wandb/
 cache_dir/
@@ -169,7 +170,7 @@ dmypy.json
 
 # pytype static type analyzer
 .pytype/
-
+*.png
 # Cython debug symbols
 cython_debug/
 
@@ -182,3 +183,4 @@ cython_debug/
 
 *.pkl
 *.bin
+eval/

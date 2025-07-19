@@ -122,14 +122,14 @@ def dump_forward(
             assert False
             k = rearrange(k.unsqueeze(-2).repeat(1, 1, 1, self.num_kv_groups, 1), 'b t h g d -> b t (h g) d')
             v = rearrange(v.unsqueeze(-2).repeat(1, 1, 1, self.num_kv_groups, 1), 'b t h g d -> b t (h g) d')
-        # with open(f"tensor/{self.layer_idx}_q.pkl", "wb") as f:
-        #     pickle.dump(q, f)
-        # with open(f"tensor/{self.layer_idx}_k.pkl", "wb") as f:
-        #     pickle.dump(k, f)
-        # with open(f"tensor/{self.layer_idx}_v.pkl", "wb") as f:
-        #     pickle.dump(v, f)
-        # with open(f"tensor/{self.layer_idx}_gk.pkl", "wb") as f:
-        #     pickle.dump(log_fgate, f)
+        with open(f"tensor/760m/{self.layer_idx}_q.pkl", "wb") as f:
+            pickle.dump(q, f)
+        with open(f"tensor/760m/{self.layer_idx}_k.pkl", "wb") as f:
+            pickle.dump(k, f)
+        with open(f"tensor/760m/{self.layer_idx}_v.pkl", "wb") as f:
+            pickle.dump(v, f)
+        with open(f"tensor/760m/{self.layer_idx}_fg.pkl", "wb") as f:
+            pickle.dump(log_fgate, f)
         # Contains at least one padding token in the sequence
         if attention_mask is not None:
             breakpoint()
@@ -163,6 +163,10 @@ def dump_forward(
             # o = o * ogate
             # ogate = act_gate(self.ogate_proj(hidden_states), o)
             ogate_logit = self.ogate_proj(hidden_states)
+            with open(f"tensor/760m/{self.layer_idx}_o.pkl", "wb") as f:
+                pickle.dump(o, f)
+            with open(f"tensor/760m/{self.layer_idx}_og.pkl", "wb") as f:
+                pickle.dump(ogate_logit, f)
             dtype = ogate_logit.dtype
             if self.ogate_act == "silu":
                 o = swiglu_linear(ogate_logit, o, self.o_proj.weight.to(dtype), self.o_proj.bias.to(dtype) if self.o_proj.bias is not None else self.o_proj.bias)
